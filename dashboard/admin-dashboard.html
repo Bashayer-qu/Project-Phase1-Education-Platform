@@ -37,16 +37,21 @@
         let courses = [];
         let users = [];
 
+        // Wait until the DOM is fully loaded
         document.addEventListener("DOMContentLoaded", () => {
             const admin = JSON.parse(sessionStorage.getItem("loggedInUser"));
+
+            // Redirect non-admin users to login
             if (!admin || admin.role !== "admin") {
                 alert("Access Denied! Redirecting to login...");
                 window.location.href = "../login/login.html";
                 return;
             }
 
+            // Show admin name in header
             document.getElementById("adminName").textContent = admin.name;
 
+            // Load courses and users data, then display information
             fetch("../courses.json")
                 .then(res => res.json())
                 .then(courseData => {
@@ -63,9 +68,11 @@
                     displayCourses();
                 });
 
+            // Event handler for course creation form
             document.getElementById("newCourseForm").addEventListener("submit", createCourse);
         });
 
+        // Show unassigned courses and allow admin to assign instructors
         function displayAssignments() {
             const container = document.getElementById("assignmentContainer");
             container.innerHTML = "";
@@ -100,6 +107,7 @@
             });
         }
 
+        // Assign instructor to selected course
         function assignInstructor(courseId, instructorUsername, instructors) {
             const course = courses.find(c => c.id === courseId);
             const instructor = instructors.find(i => i.username === instructorUsername);
@@ -113,6 +121,7 @@
             displayCourses();
         }
 
+        // Show students with pending course approval requests
         function displayPendingApprovals(users) {
             const container = document.getElementById("pendingApprovalsContainer");
             container.innerHTML = "";
@@ -143,6 +152,7 @@
             }
         }
 
+        // Approve a course registration for a student
         function approveCourse(username, courseName) {
             let users = JSON.parse(sessionStorage.getItem("allUsers"));
             const user = users.find(u => u.username === username);
@@ -158,6 +168,7 @@
             displayPendingApprovals(users);
         }
 
+        // Reject a course registration for a student
         function rejectCourse(username, courseName) {
             let users = JSON.parse(sessionStorage.getItem("allUsers"));
             const user = users.find(u => u.username === username);
@@ -169,6 +180,7 @@
             displayPendingApprovals(users);
         }
 
+        // Display a list of all courses with their current status
         function displayCourses() {
             const container = document.getElementById("courseListContainer");
             container.innerHTML = "";
@@ -186,6 +198,7 @@
                     Enrolled: ${course.enrolled}/${course.capacity}<br><br>
                 `;
 
+                // Show course validation/cancellation options
                 if (course.enrolled >= 5 && !course.validated) {
                     const approveBtn = document.createElement("button");
                     approveBtn.textContent = "Validate Course";
@@ -197,13 +210,14 @@
                     cancelBtn.onclick = () => cancelCourse(course.id);
                     div.appendChild(cancelBtn);
                 } else if (course.validated) {
-                    div.innerHTML += "<p>✅ Course Validated</p>";
+                    div.innerHTML += "<p>Course Validated</p>";
                 }
 
                 container.appendChild(div);
             });
         }
 
+        // Validate a course for starting
         function validateCourse(courseId) {
             const course = courses.find(c => c.id === courseId);
             course.validated = true;
@@ -212,6 +226,7 @@
             displayCourses();
         }
 
+        // Cancel a course due to low enrollment
         function cancelCourse(courseId) {
             const course = courses.find(c => c.id === courseId);
             course.validated = false;
@@ -221,6 +236,7 @@
             displayCourses();
         }
 
+        // Create a new course from form input
         function createCourse(event) {
             event.preventDefault();
             const name = document.getElementById("newCourseName").value.trim();
@@ -249,6 +265,7 @@
             }
         }
 
+        // Clear session and redirect to login
         function logout() {
             sessionStorage.clear();
             alert("You have been logged out.");
